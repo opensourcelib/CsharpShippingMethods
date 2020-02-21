@@ -56,81 +56,95 @@ namespace ShippingMethod.Plugin.UPS
         #region Rate
         public string RatingServiceSelectionRequest(Address shipperAddress, Address destinationAddress, List<Package> packages, string serviceCode, string pickUpType)
         {
-            StringBuilder sb = new StringBuilder();
+            String request = "<?xml version=\"1.0\"?>\n" +
+                    "    \t<AccessRequest xml:lang=\"en-US\">\n" +
+                    "    \t\t<AccessLicenseNumber>" + AccessNumber + "</AccessLicenseNumber>\n" +
+                    "    \t\t<UserId>" + UserName + "</UserId>\n" +
+                    "    \t\t<Password>" + Password + "</Password>\n" +
+                    "    \t</AccessRequest>\n" +
+                    "    \t<?xml version=\"1.0\"?>\n" +
+                    "    \t<RatingServiceSelectionRequest xml:lang=\"en-US\">\n" +
+                    "    \t\t<Request>\n" +
+                    "    \t\t\t<TransactionReference>\n" +
+                    "    \t\t\t\t<CustomerContext>Bare Bones Rate Request</CustomerContext>\n" +
+                    "    \t\t\t\t<XpciVersion>1.0001</XpciVersion>\n" +
+                    "    \t\t\t</TransactionReference>\n" +
+                    "    \t\t\t<RequestAction>Rate</RequestAction>\n" +
+                    "    \t\t\t<RequestOption>Rate</RequestOption>\n" +
+                    "    \t\t</Request>\n" +
+                    "    \t<PickupType>\n" +
+                    "    \t\t<Code>01</Code>\n" +
+                    "                <Description>Regular Daily Pickup</Description>\n" +
+                    "    \t</PickupType>\n" +
+                    "    \t<Shipment>\n" +
+                    "    \t<RateInformation>\n" +
+                    "    \t\t<NegotiatedRatesIndicator/>\n" +
+                    "    \t</RateInformation>\n" +
+                    "    \t\t<Shipper>\n" +
+                    "    \t\t\t<Address>\n" +
+                    "    \t\t\t\t<PostalCode>" + shipperAddress.ZipCode + "</PostalCode>\n" +
+                    "    \t\t\t\t<StateProvinceCode>" + shipperAddress.State.StateCode + "</StateProvinceCode>\n" +
+                    "    \t\t\t\t<CountryCode>" + shipperAddress.Country.CountryCode + "</CountryCode>\n" +
+                    "    \t\t\t</Address>\n" +
+                    "\t\t\t<ShipperNumber>" + ShipperNumber + "</ShipperNumber>\n" +
+                    "    \t\t</Shipper>\n" +
+                    "    \t\t<ShipTo>\n" +
+                    "    \t\t\t<Address>\n" +
+                    "    \t\t\t\t<PostalCode>" + destinationAddress.ZipCode + "</PostalCode>\n" +
+                    "    \t\t\t\t<CountryCode>" + destinationAddress.Country.CountryCode + "</CountryCode>\n" +
+                    "\t\t\t\t<ResidentialAddressIndicator/>\n" +
+                    "    \t\t\t</Address>\n" +
+                    "    \t\t</ShipTo>\n" +
+                    "    \t\t<ShipFrom>\n" +
+                    "    \t\t\t<Address>\n" +
+                    "    \t\t\t\t<City>" + shipperAddress.City + "</City>\n" +
+                    "    \t\t\t\t<StateProvinceCode>" + shipperAddress.State.StateCode + "</StateProvinceCode>\n" +
+                    "    \t\t\t\t<PostalCode>" + shipperAddress.ZipCode + "</PostalCode>\n" +
+                    "    \t\t\t\t<CountryCode>US</CountryCode>\n" +
+                    "    \t\t\t</Address>\n" +
+                    "    \t\t</ShipFrom>\n" +
+                    "    \t\t<Service>\n" +
+                    "    \t\t\t<Code>" + serviceCode + "</Code>\n" +
+                    "    \t\t</Service>\n";
 
-            sb.Append("<?xml version='1.0'?>");
-            sb.Append("	<AccessRequest xml:lang='en-US'>");
-            sb.Append("		<AccessLicenseNumber>").Append(AccessNumber).Append("</AccessLicenseNumber>");
-            sb.Append("		<UserId>").Append(UserName).Append("</UserId>");
-            sb.Append("		<Password>").Append(Password).Append("</Password>");
-            sb.Append("	</AccessRequest>");
-            sb.Append("<?xml version='1.0'?>");
-            sb.Append("	<RatingServiceSelectionRequest xml:lang='en-US'>");
-            sb.Append("		<Request>");
-            sb.Append("			<TransactionReference>");
-            sb.Append("				<CustomerContext>Rating and Service</CustomerContext>");
-            sb.Append("				<XpciVersion>1.0001</XpciVersion>");
-            sb.Append("			</TransactionReference>");
-            sb.Append("			<RequestAction>Rate</RequestAction>");
-            sb.Append("			<RequestOption>Rate</RequestOption>");
-            sb.Append("		</Request>");
-            sb.Append("		<PickupType>");
-            sb.Append("			<Code>").Append(pickUpType).Append("</Code>");
-            sb.Append("		</PickupType>");
-            sb.Append("		<Shipment>");
-            sb.Append("			<Shipper>");
-            sb.Append("				<Address>");
-            sb.Append("					<PostalCode>").Append(shipperAddress.ZipCode).Append("</PostalCode>");
-            sb.Append("          <CountryCode>").Append(shipperAddress.Country.CountryCode).Append("</CountryCode>");
-            sb.Append("				</Address>");
-            sb.Append("			</Shipper>");
-            sb.Append("			<ShipTo>");
-            sb.Append("				<Address>");
-            sb.Append("					<PostalCode>").Append(destinationAddress.ZipCode).Append("</PostalCode>");
-            sb.Append("					<CountryCode>").Append(shipperAddress.Country.CountryCode).Append("</CountryCode>");
-            sb.Append("				</Address>");
-            sb.Append("			</ShipTo>");
-            sb.Append("			<Service>");
-            sb.Append("				<Code>").Append(serviceCode).Append("</Code>");
-            sb.Append("			</Service>");
+                    for (var i = 0; i < packages.Count; i++)
+                    {
+                        request +=  "\t\t<Package>\n" +
+                                    "\t\t\t<PackagingType>\n" +
+                                    "\t\t\t\t<Code>02</Code>\n" +
+                                    "\t\t\t</PackagingType>\n"+
+                                    "\t\t\t<Dimensions>\n" +
+                                    "\t\t\t\t<UnitOfMeasurement>\n" +
+                                    "\t\t\t\t\t<Code>IN</Code>\n" +
+                                    "\t\t\t\t</UnitOfMeasurement>\n" +
+                                    "\t\t\t\t<Length>" + packages[i].RoundedLength.ToString() + "</Length>\n" +
+                                    "\t\t\t\t<Width>" + packages[i].RoundedWidth.ToString() + "</Width>\n" +
+                                    "\t\t\t\t<Height>" + packages[i].RoundedHeight.ToString() + "</Height>\n" +
+                                    "\t\t\t</Dimensions>\n"+
+                                    "\t\t\t<PackageWeight>\n" +
+                                    "\t\t\t\t<UnitOfMeasurement>\n" +
+                                    "\t\t\t\t\t<Code>LBS</Code>\n" +
+                                    "\t\t\t\t</UnitOfMeasurement>\n" +
+                                    "\t\t\t\t<Weight>" + packages[i].RoundedWeight.ToString() + "</Weight>\n" +
+                                    "\t\t\t</PackageWeight>\n"+
+                                    "\t\t\t<PackageServiceOptions>\n" +
+                                    "\t\t\t<InsuredValue>\n" +
+                                    "\t\t\t\t<CurrencyCode>USD</CurrencyCode>\n"+
+                                    "\t\t\t\t<MonetaryValue>" + packages[i].InsuredValue.ToString()+"</MonetaryValue>\n"+
+                                    "\t\t\t</InsuredValue>\n";
+                        if (packages[i].SignatureRequiredOnDelivery)
+                        {
+                            request +="\t\t\t\t<DeliveryConfirmation>\n"+
+                                        "\t\t\t\t<DCISType>2</DCISType>\n"+
+                                        "\t\t\t\t</DeliveryConfirmation>\n";
+                        }
+                         request += "\t\t\t</PackageServiceOptions>\n"+
+                                   "\t\t</Package>\n";
+                    }
+                    request += "\t</Shipment>\n" +
+                               "</RatingServiceSelectionRequest>";
 
-            for (var i = 0; i < packages.Count; i++)
-            {
-                sb.Append("			<Package>");
-                sb.Append("				<PackagingType>");
-                sb.Append("					<Code>02</Code>");
-                sb.Append("					<Description>Package</Description>");
-                sb.Append("				</PackagingType>");
-                sb.Append("				<Description>Rate Shopping</Description>");
-                sb.Append("				<PackageWeight>");
-                sb.Append("				    <UnitOfMeasurement>");
-                sb.Append("				    <Code>LBS</Code>");
-                sb.Append("				    </UnitOfMeasurement>");
-                sb.Append("					<Weight>").Append(packages[i].RoundedWeight.ToString()).Append("</Weight>");
-                sb.Append("				</PackageWeight>");
-                sb.Append("			<Dimensions>");
-                sb.Append("					<Length>").Append(packages[i].RoundedLength.ToString()).Append("</Length>");
-                sb.Append("					<Width>").Append(packages[i].RoundedWidth.ToString()).Append("</Width>");
-                sb.Append("					<Height>").Append(packages[i].RoundedHeight.ToString()).Append("</Height>");
-                sb.Append("			</Dimensions>");
-                sb.Append("			<PackageServiceOptions>");
-                sb.Append("			<InsuredValue>");
-                sb.Append("			<CurrencyCode>").Append("USD").Append("</CurrencyCode>");
-                sb.Append("			<MonetaryValue>").Append(packages[i].InsuredValue.ToString()).Append("</MonetaryValue>");
-                sb.Append("			</InsuredValue>");
-                if (packages[i].SignatureRequiredOnDelivery)
-                {
-                    sb.Append("			<DeliveryConfirmation>");
-                    sb.Append("			<DCISType>").Append("2").Append("</DCISType>");
-                    sb.Append("			</DeliveryConfirmation>");
-                }
-                sb.Append("			</PackageServiceOptions>");
-                sb.Append("			</Package>");
-            }
-            sb.Append("			<ShipmentServiceOptions/>");
-            sb.Append("		</Shipment>");
-            sb.Append("</RatingServiceSelectionRequest>");
-            return sb.ToString();
+            return request;
         }
 
         public static IEnumerable<Shipment> GetRate(string response, bool saturdayDelivery, ref string error)
